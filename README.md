@@ -1,5 +1,5 @@
 # Cardiovascular disease Predictor
-A binary classification machine learning model to predict heart conditions based on a heart dataset combining common clinical features which are connected to heart diseases
+A binary classification machine learning model to predict heart conditions based on a heart dataset combining common clinical features
 
 ## About the project
 During the project the dataset was firstly used to perfom data analytics and secondly used to implement and evaluate a machine learning model to predict the occurence of a heart failure based on clinical features from patients.
@@ -12,9 +12,16 @@ This dataset was created by combining different datasets already available indep
 https://www.kaggle.com/fedesoriano/heart-failure-prediction
 
 ## The Model
+This ML model was build, trained and evaluated on the following steps:
+- Preprocessing: handling categorical variables using ColumnTransformer
+- Data Scaling: bring features on a relatively similar scale and close to normal distribution using MinMaxScaler and StandardScaler
+- Feature selection:
+- Hyperparameter selection: using Gridsearch for different base models
+- Stacking:
+- Train model:
+- Predict:
 
-
-###### *Used libraries: *
+###### *Used libraries: Pandas, Numpy, Scikit-learn, Seaborn, Matplotlib, ydata_profiling*
 
 
 
