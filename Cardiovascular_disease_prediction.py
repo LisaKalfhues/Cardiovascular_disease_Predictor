@@ -18,9 +18,6 @@ from ydata_profiling import ProfileReport
 profile = pp.ProfileReport(df)
 profile.to_file("report.html")
 
-categorical_features = ['Sex','ChestPainType','RestingECG','ExerciseAngina','FastingBS','ST_Slope','HeartDisease']
-numerical_features = ['Age','RestingBP','MaxHR','Cholesterol','Oldpeak']
-
 
 
 # Preprocessing usinf ColumnTranformer
@@ -115,5 +112,131 @@ plt.subplots(figsize = (5,5))
 sns.heatmap(featureScores.sort_values(ascending = False,by = 'ANOVA Score'),annot = True,linewidths = 0.6,linecolor = 'black',fmt = '.2f');
 plt.title('Selection of Numerical Features')
 
+# Drop selected features
+df_final = df[df.columns.drop(['remainder__HeartDisease','remainder__RestingBP','encoder__RestingECG_LVH'])]
+target = df['remainder__HeartDisease']
 
 
+
+# Model training
+# Train-test-split
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(df_final, target, test_size = 0.20, random_state = 42)
+
+# Find the best hyperparameter of base models
+from sklearn.model_selection import GridSearchCV
+
+# SVM
+from sklearn.svm import NuSVC, SVC
+svm = SVC()
+param_grid_svm = {'C': [0.1, 1, 10, 100, 1000], # Regularization parameter, strength of the regularization is inversely prop. to C
+              'gamma': ['auto','scale'], # Kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’
+              'kernel': ['linear','poly','rbf','sigmoid'] # Specifies the kernel type to be used in the algorithm
+             }
+
+gs_svm = GridSearchCV(  estimator = svm,
+                        param_grid = param_grid_svm,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for Support Vector Machine
+gs_svm.fit(x_train,y_train)
+gs_svm.best_params_
+
+# KNN
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier()
+param_grid_knn = { 'n_neighbors' : [2,5,10,15,20], # Number of neighbors to use by default for kneighbors queries
+               'weights' : ['uniform','distance'], # Weight function used in prediction, (uniform= all equally, distance=by the inverse of distance)
+               'metric' : ['minkowski','euclidean','manhattan']} # Metric to use for distance computation
+
+gs_knn = GridSearchCV(  estimator = knn,
+                        param_grid = param_grid_knn,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for K-neirest neighbors
+gs_knn.fit(x_train,y_train)
+gs_knn.best_params_
+
+# Random Forest
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier()
+param_grid_rfc = { 
+    'n_estimators': [100, 150, 300, 500 ], # The number of trees in the forest
+    'max_features': ['auto', 'sqrt', 'log2'], # The number of features to consider when looking for the best split
+    'max_depth' : [4,5,6,7,8], # The maximum depth of the tree
+    'criterion' :['gini', 'entropy'] # The function to measure the quality of a split
+}
+
+gs_rfc = GridSearchCV(  estimator = rfc,
+                        param_grid = param_grid_rfc,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for Random Forest Classifier
+gs_rfc.fit(x_train,y_train)
+gs_rfc.best_params_
+
+# Decision Tree
+from sklearn.tree import DecisionTreeClassifier
+dt = DecisionTreeClassifier(random_state=42)
+param_grid_dt = {
+    'max_depth': [2, 3, 5, 10, 20], # The maximum depth of the tree
+    'min_samples_leaf': [5, 10, 20, 50, 100], # The minimum number of samples required to split an internal node
+    'criterion': ["gini", "entropy"] # The function to measure the quality of a split
+}
+
+gs_dt = GridSearchCV(  estimator = dt,
+                        param_grid = param_grid_dt,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for Decision Tree Classifier
+gs_dt.fit(x_train,y_train)
+gs_dt.best_params_
+
+# Naive Bayes
+from sklearn.naive_bayes import GaussianNB
+nb = GaussianNB()
+param_grid_nb = {'var_smoothing': np.logspace(0,-9, num=100)} # Portion of the largest variance of all features that is added to variances for calculation stability.
+
+gs_nb = GridSearchCV(  estimator = nb,
+                        param_grid = param_grid_nb,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for Naive Bayes
+gs_nb.fit(x_train,y_train)
+gs_nb.best_params_
+
+# Logistic Regression
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression()
+param_grid_lr = {
+    'penalty' : ['l1', 'l2', 'elasticnet', 'none'], # Specify the norm of the penalty
+    'C' : np.logspace(-4, 4, 20), # Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values specify stronger regularization
+    'solver' : ['lbfgs','newton-cg','liblinear','sag','saga'], # Algorithm to use in the optimization problem
+    'max_iter' : [1,2,5,10,50,100] # Maximum number of iterations taken for the solvers to converge
+    }
+
+gs_lr = GridSearchCV(  estimator = lr,
+                        param_grid = param_grid_lr,
+                        scoring = "roc_auc",
+                        refit = True,
+                        verbose = 1,
+                        n_jobs = -1)
+
+# Apply to trainings data and print best hyperparameter for Logistic Regression
+gs_lr.fit(x_train,y_train)
+gs_lr.best_params_
