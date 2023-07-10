@@ -13,20 +13,18 @@ https://www.kaggle.com/fedesoriano/heart-failure-prediction
 
 ## The Model
 This ML model was build, trained and evaluated on the following steps:
-- Preprocessing: handling categorical variables using ColumnTransformer
-- Data Scaling: bring features on a relatively similar scale and close to normal distribution using MinMaxScaler and StandardScaler
+- Preprocessing: handling categorical variables using *ColumnTransformer*
+- Data Scaling: bring features on a relatively similar scale and close to normal distribution using *MinMaxScaler* and *StandardScaler*
 - Feature selection:
-- Hyperparameter selection: using Gridsearch for different base models
-- Stacking:
-- Train model:
-- Predict:
+- Hyperparameter selection: using *GridSearchCV* to find best parameters for different base models
+- Stacking: using *StackingClassifier* to combine the output of multiple base estimators/meta classifier to make predictions
+- Model training and scoring of predictions
 
 ###### *Used libraries: Pandas, Numpy, Scikit-learn, Seaborn, Matplotlib, ydata_profiling*
 
 
 
 ## Credits
-- This project 
 
 
 

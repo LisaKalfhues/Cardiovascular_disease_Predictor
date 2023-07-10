@@ -4,6 +4,10 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import ydata_profiling as pp
+import warnings
+warnings.filterwarnings('ignore')
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 
 
@@ -143,7 +147,7 @@ gs_svm = GridSearchCV(  estimator = svm,
 
 # Apply to trainings data and print best hyperparameter for Support Vector Machine
 gs_svm.fit(x_train,y_train)
-gs_svm.best_params_
+print('Best parameters for Support Vector Machine:', gs_svm.best_params_)
 
 # KNN
 from sklearn.neighbors import KNeighborsClassifier
@@ -161,7 +165,7 @@ gs_knn = GridSearchCV(  estimator = knn,
 
 # Apply to trainings data and print best hyperparameter for K-neirest neighbors
 gs_knn.fit(x_train,y_train)
-gs_knn.best_params_
+print('Best parameters for K-nearest Neighbors:', gs_knn.best_params_)
 
 # Random Forest
 from sklearn.ensemble import RandomForestClassifier
@@ -182,7 +186,7 @@ gs_rfc = GridSearchCV(  estimator = rfc,
 
 # Apply to trainings data and print best hyperparameter for Random Forest Classifier
 gs_rfc.fit(x_train,y_train)
-gs_rfc.best_params_
+print('Best parameters for Random Forest Classifier:', gs_rfc.best_params_)
 
 # Decision Tree
 from sklearn.tree import DecisionTreeClassifier
@@ -202,7 +206,7 @@ gs_dt = GridSearchCV(  estimator = dt,
 
 # Apply to trainings data and print best hyperparameter for Decision Tree Classifier
 gs_dt.fit(x_train,y_train)
-gs_dt.best_params_
+print('Best parameters for Decision Tree:', gs_dt.best_params_)
 
 # Naive Bayes
 from sklearn.naive_bayes import GaussianNB
@@ -218,7 +222,7 @@ gs_nb = GridSearchCV(  estimator = nb,
 
 # Apply to trainings data and print best hyperparameter for Naive Bayes
 gs_nb.fit(x_train,y_train)
-gs_nb.best_params_
+print('Best parameters for Naive Bayes:', gs_nb.best_params_)
 
 # Logistic Regression
 from sklearn.linear_model import LogisticRegression
@@ -239,4 +243,33 @@ gs_lr = GridSearchCV(  estimator = lr,
 
 # Apply to trainings data and print best hyperparameter for Logistic Regression
 gs_lr.fit(x_train,y_train)
-gs_lr.best_params_
+print('Best parameters for Logistic Regression:', gs_lr.best_params_)
+
+
+
+# StackingClassifier (using best hyperparameters)
+from sklearn.ensemble import StackingClassifier
+
+# Define base estimators
+base_estimator =(('svm', SVC(C=1, gamma='auto', kernel='linear')),
+                ('knn', KNeighborsClassifier(metric='minkowski', n_neighbors=15, weights='distance')),
+                ('rfc', RandomForestClassifier(criterion='entropy', max_depth=4, max_features='sqrt', n_estimators=150)),
+                ('dt', DecisionTreeClassifier(criterion='entropy', max_depth=5, min_samples_leaf=10)),
+                ('lr', LogisticRegression(C=0.615848211066026, max_iter=1, penalty='l2', solver='saga'))
+                )
+    
+# Define meta classifier
+meta_classifier = GaussianNB(var_smoothing=0.1)
+
+# Define stacking ensemble
+model = StackingClassifier(estimators=base_estimator,
+                            final_estimator=meta_classifier,
+                            cv=10,
+                            passthrough=True,
+                            stack_method='auto'
+                            )
+
+model.fit(x_train, y_train)
+
+print('Score for training data:', model.score(x_train, y_train))
+print('Score for test data:', model.score(x_test, y_test))
